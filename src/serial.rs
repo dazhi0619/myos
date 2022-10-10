@@ -1,10 +1,13 @@
 use lazy_static::lazy_static;
 use spin::Mutex;
-use uart_16550::SerialPort;
+use uart_16550::MmioSerialPort;
+
+// use memory-mapped I/O for RISC-V
+const SERIAL_PORT_BASE_ADDR: usize = 0x1000_0000;
 
 lazy_static! {
-    pub static ref SERIAL1: Mutex<SerialPort> = {
-        let mut serial_port = unsafe { SerialPort::new(0x3F8) };
+    pub static ref SERIAL1: Mutex<MmioSerialPort> = {
+        let mut serial_port = unsafe { MmioSerialPort::new(SERIAL_PORT_BASE_ADDR) };
         serial_port.init();
         Mutex::new(serial_port)
     };

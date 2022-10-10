@@ -1,48 +1,28 @@
 #![no_std]
 #![no_main]
-#![feature(custom_test_frameworks)]
-#![test_runner(blog_os::test_runner)]
-#![reexport_test_harness_main = "test_main"]
 
 use blog_os::println;
+use blog_os::sbi_call::shutdown;
+use blog_os::trap;
+use core::arch::{asm, global_asm};
 use core::panic::PanicInfo;
 
+global_asm!(include_str!("entry_riscv64.asm"));
+
 #[no_mangle]
-pub extern "C" fn _start() -> ! {
-    println!("Hello World{} ", "!");
-
-    blog_os::init();
-
-    #[allow(unconditional_recursion)]
-    fn stack_overflow() {
-        stack_overflow();
+#[allow(unconditional_panic)]
+pub extern "C" fn main() -> ! {
+    trap::init();
+    println!("Hello World! It's println.");
+    unsafe {
+        asm!("ebreak");
     }
-    stack_overflow();
-
-    // invoke a breakpoint exception
-    x86_64::instructions::interrupts::int3();
-
-    #[cfg(test)]
-    test_main();
-
-    println!("It did not crash!");
-    loop {}
+    println!("recovered from trap");
+    shutdown()
 }
 
-#[cfg(not(test))]
 #[panic_handler]
 fn panic(_info: &PanicInfo) -> ! {
     println!("{}", _info);
-    loop {}
-}
-
-#[cfg(test)]
-#[panic_handler]
-fn panic(info: &PanicInfo) -> ! {
-    blog_os::test_panic_handler(info)
-}
-
-#[test_case]
-pub fn trivial_assertion() {
-    assert_eq!(1, 1);
+    shutdown()
 }

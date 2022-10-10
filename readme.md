@@ -1,0 +1,1 @@
+由于程序运行时的$sp寄存器指向的地址不可用，而且[rust无法操作riscv的$sp寄存器}(https://zhuanlan.zhihu.com/p/270379116)所以必须要有汇编代码作为入口点，否则在`sd ra, 136(sp)`时程序会崩溃，回到opensbi环境。
