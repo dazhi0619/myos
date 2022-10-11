@@ -6,8 +6,11 @@ use riscv::register::{sscratch, stvec};
 use crate::context::Frame;
 use crate::println;
 
+// the entry point of trap handler,
+// preserves and restores the env and calls trap_handler
 global_asm!(include_str!("trap.S"));
 
+// register the trap handler
 pub fn init() {
     extern "C" {
         fn __alltraps();
@@ -19,9 +22,10 @@ pub fn init() {
     }
 }
 
+// the real trap handler that handles traps
 #[no_mangle]
 fn trap_handler(f: &mut Frame) {
-    // if f.spec += 4, then it will either panic here or trap again
+    // the length of ebreak instruction is 2
     f.sepc += 2;
     println!("trapped!");
 }

@@ -7,8 +7,10 @@ use blog_os::trap;
 use core::arch::{asm, global_asm};
 use core::panic::PanicInfo;
 
+// the entry point, allocates stack and calls main()
 global_asm!(include_str!("entry_riscv64.asm"));
 
+// the de facto entry point that does things
 #[no_mangle]
 #[allow(unconditional_panic)]
 pub extern "C" fn main() -> ! {

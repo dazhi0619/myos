@@ -49,6 +49,8 @@ trap_from_user:
     SAVE 30
     SAVE 31
     csrrw s0, sscratch, x0
+
+    # pass the argument to the trap handler
     csrr s1, sstatus
     csrr s2, sepc
     csrr s3, stval
@@ -106,12 +108,14 @@ _to_kernel:
 
     .section .text
     .globl __alltraps
+    # riscv requires the addr of trap handler to be aligned
     .align 4
 __alltraps:
     SAVE_ALL
     mv a0, sp
     jal trap_handler
 
+    # the returning wrapper function
     .globl __trapret
 __trapret:
     RESTORE_ALL

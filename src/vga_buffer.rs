@@ -1,5 +1,6 @@
 use core::fmt;
 
+// use sbi to print text, unlike x86 uses mmio
 use crate::sbi_call::console_putc;
 
 struct Writer;

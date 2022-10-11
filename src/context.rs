@@ -1,5 +1,6 @@
 use riscv::register::{scause::Scause, sstatus::Sstatus};
 
+// referred to in trap/mod.rs, value set by codes in trap.S
 #[repr(C)]
 pub struct Frame {
     pub x: [usize; 32],

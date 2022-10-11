@@ -1,6 +1,6 @@
 # MyOS
 
-This is a RISC-V port of Phil-Opp's BlogOS. Part of its code comes from rCore-Tutorial [v2](https://github.com/rcore-os/rCore_tutorial_doc) and [v3](https://github.com/rcore-os/rCore-Tutorial-v3). It can currently boot, shutdown, print to the screen, and print to the serial port successfully. It has a primitive trap handling module as well, which simply jumps over the trapping instruction.
+This is a RISC-V port of Phil-Opp's BlogOS. Part of its code comes from rCore-Tutorial [v2](https://github.com/rcore-os/rCore_tutorial_doc) and [v3](https://github.com/rcore-os/rCore-Tutorial-v3). It can currently boot, shutdown, print to the screen, and print to the serial port successfully. It has a primitive trap handling module as well, which simply jumps over the trapping instruction and continues executing.
 
 ## How to run
 
@@ -14,7 +14,7 @@ This is a RISC-V port of Phil-Opp's BlogOS. Part of its code comes from rCore-Tu
 
 ### Test
 
-Assuming that you have `just` installed, type in the project directory:
+Assuming that you have `just` installed, type in the terminal under the project directory:
 
 ```sh
 just run
@@ -47,3 +47,12 @@ Firstly, there is no way to specify the address of the entry point of a program 
 
 Then, after solving the previous problem (or at least coincidently avoiding the problem), I found that the virtual machine reset after the second instruction of the kernel when not using U-Boot. Strangely, this error would not occur when using U-Boot. The very instruction that caused the resetting was something like `sd ra, 144(sp)`. Later I realized that the value of $sp could be inaccessible because it is on OpenSBI's stack. Therefore, after reading the rCore tutorial, I learned that [rust could not modify the value of $sp](https://zhuanlan.zhihu.com/p/270379116), so it was necessary to write a piece of assembly code as the entry point to allocate a block of space as the kernel stack as well as to invoke the rust main function, which contributed to solve the previous problem.
 
+## Exception Handling
+
+The two architectures handle exceptions differently as well. Here I use "exception" to refer to those situations when there was an error in the code, causing the instruction execution process to be paused, "interrupt" to refer to those situation when the status of the (peripheral) device is changed, causing the instruction execution process to be paused, and "trap" to refer to both of them.
+
+On x86 arch, when an exception occurs, the CPU looks up in the Interrupt Descriptor Table to find the address of the corresponding exception handler function. Then, it preserves some registers and load the specified Global Discriptor Table (GDT) into the Code Segment (CS) register as the base address. Finally, it jumps to the correspoding handler.
+
+On RISC-V arch, on the other hand, when the CPU traps, the usual procedure is that it pushes the registers to the stack to preserve the environment, and then jumps to a universal trap handler specified by the stvec register, which determines the type of the trap (exception or interrupt), and act correspondingly. There is another mode of trap handling. When the lower 2 bits of stvec are set to `1`, different interrupt will invoke different handler. At first, I was not aware of the difference between an interrupt and an exception, so I tried to handle exceptions the same way as on x86 arch. But soon after several kernel panics, I realized the difference.
+
+The same as above, we cannot access all the registers using pure rust, for example, $sp, $ra, so we need assembly code to help us preserve and restore the environment. Here I used the code in the rCore tutorial v2 to preserve and restore the environment. Due to the time limit, I only implemented a primitive trap handler that simply ignores the trap and continues executing.
