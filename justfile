@@ -16,11 +16,11 @@ run: build
 run-gdb: build
     qemu-system-riscv64 -machine virt -bios ./fw_jump.bin -device loader,file=./target/riscv64gc-unknown-none-elf/release/blog_os.bin,addr=0x80200000 -display none -s -S
 
-gdb: run-gdb
-    ./riscv64-unknown-elf-gdb -ex 'file /mnt/d/SourceCodeLibrary/repos/blog_os/target/riscv64gc-unknown-none-elf/release/blog_os' -ex 'set arch riscv:rv64' -ex 'target remote localhost:1234' -q
+gdb: 
+    riscv64-unknown-elf-gdb -ex 'file target/riscv64gc-unknown-none-elf/release/blog_os' -ex 'set arch riscv:rv64' -ex 'target remote localhost:1234' -q
 
 run-gdb-debug: build-debug
     qemu-system-riscv64 -machine virt -bios ./fw_jump.bin -device loader,file=./target/riscv64gc-unknown-none-elf/debug/blog_os.bin,addr=0x80200000 -display none -s -S
 
-gdb-debug: run-gdb-debug
-    ./riscv64-unknown-elf-gdb -ex 'file /mnt/d/SourceCodeLibrary/repos/blog_os/target/riscv64gc-unknown-none-elf/debug/blog_os' -ex 'set arch riscv:rv64' -ex 'target remote localhost:1234' -q
+gdb-debug: 
+    riscv64-unknown-elf-gdb -ex 'file target/riscv64gc-unknown-none-elf/debug/blog_os' -ex 'set arch riscv:rv64' -ex 'target remote localhost:1234' -q
